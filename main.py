@@ -4,9 +4,10 @@ from target import Target
 
 app = Ursina()
 
-# Criando o ambiente
+# 🌌 Skybox for environment
 sky = Sky()
 
+# 🟩 Ground (Floor)
 floor = Entity(
     model='plane',
     scale=(50, 1, 50),
@@ -17,19 +18,17 @@ floor = Entity(
 )
 floor.position = (0, 0, 0)
 
-# Criando o Radar **fixo no canto do mapa**
-radar = Radar(position=(0, 0, -20))
-
+# ✈️ Load F-16 Model
 f16_model = load_model('f16CleanWings.obj')
 
-# Criando alvos
+# 🎯 Create Targets
 targets = [
-    Target(model_name='sphere', position=(-5, 1, 0), color=color.red, scale=1),
-    Target(model_name='cube', position=(5, 1, 0), color=color.blue, scale=1),
-    Target(model=f16_model, position=(0, 1, 5),color =color.pink, scale=1)
+    Target(model_name='sphere', position=(-5, 1, 0), color=color.red, scale=1, collider='box'),
+    Target(model_name='cube', position=(5, 1, 0), color=color.blue, scale=1, collider='box'),
+    Target(model=f16_model, position=(0, 1, 5), color=color.pink, scale=1, collider='box')
 ]
 
-def update():
-    radar.update()  # Atualiza a rotação da câmera conforme o mouse
+# 🎯 Create Radar and Pass Targets (FIXED)
+radar = Radar(position=(0, 0, -20), targets=targets)
 
 app.run()
