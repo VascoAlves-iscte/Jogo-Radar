@@ -10,7 +10,7 @@ sky = Sky()
 # 🟩 Ground (Floor)
 floor = Entity(
     model='plane',
-    scale=(50, 1, 50),
+    scale=(100, 2, 100),
     texture='white_cube',
     texture_scale=(50, 50),
     color=color.green,
@@ -25,7 +25,9 @@ f16_model = load_model('f16CleanWings.obj')
 targets = [
     Target(model_name='sphere', position=(-5, 1, 0), color=color.red, scale=1, collider='box'),
     Target(model_name='cube', position=(5, 1, 0), color=color.blue, scale=1, collider='box'),
-    Target(model=f16_model, position=(0, 1, 5), color=color.pink, scale=1, collider='box')
+    Target(model=f16_model, position=(0, 3, 50), color=color.pink, scale=1, collider='box'),
+    Target(model_name='sphere', position=(-5, 10, 70), color=color.red, scale=1, collider='box'),
+    Target(model_name='cube', position=(5, 25, 35), color=color.blue, scale=1, collider='box')
 ]
 
 # 🎯 Create Radar and Pass Targets (FIXED)

@@ -1,125 +1,157 @@
 from ursina import *
-import time  # Needed for performance fixes
+import time
+import random  
 
 class Radar(Entity):
-    """
-    Classe que representa o radar fixo no mapa.
-    A câmera rotaciona conforme o movimento do mouse sem limite e de forma suave.
-    """
-
     def __init__(self, position=(20, 1, -20), targets=None, **kwargs):
         super().__init__(position=position, **kwargs)
 
         # 🎯 Camera Configuration
         camera.parent = self
-        camera.position = (0, 2, 0)  # Ajusta a altura da câmera para a visão do radar
+        camera.position = (0, 2, 0)  
 
         # 🎯 UI Elements
         self.crosshair = Text('+', scale=2, position=(0, 0), origin=(0, 0), color=color.yellow)
+
         self.radar_text = Text(
-            text="RADAR LIGADO", scale=2, origin=(0, 0),
-            position=(0, 0.4), color=color.red, enabled=False
+            text="RADAR LIGADO", 
+            scale=2, origin=(0, 0), 
+            position=(0, 0.4),  
+            color=color.orange, enabled=False
+        )
+
+        self.radar_lock_text = Text(
+            text="LOCK", 
+            scale=2, origin=(0, 0), 
+            position=(0, 0.35),  
+            color=color.red, enabled=False
         )
 
         # 🎯 Radar State Variables
         self.radar_ligado = False
-        self.target_locked = False  # Keeps track if radar is locked onto a target
-        self.sensibilidade = 100  # Sensibilidade do mouse
-        self.smooth_x, self.smooth_y = 0, 0  # Variáveis para suavização do movimento
-        self.last_lock_check = time.time()  # ✅ FIXED: Properly initialize the last lock check
+        self.target_locked = False  
+        self.sensibilidade = 100  
+        self.smooth_x, self.smooth_y = 0, 0  
+        self.last_lock_check = time.time()  
+        self.lock_on_timer = None  
+        self.lock_on_delay = random.uniform(3, 5)  
 
         # 🎯 Sound Configuration
-        self.som_radar = Audio('radar_beep.mp3', autoplay=False, loop=True)
-        self.som_radar_lock = Audio('radar_lock.mp3', autoplay=False, loop=True)
-        self.som_duracao = 0.5  # Frequência do beep
+        self.som_radar = Audio('radar_beep.mp3', autoplay=False, loop=True)  
+        self.som_radar_fast = Audio('radar_beep_fast.mp3', autoplay=False, loop=True)  
+        self.som_radar_lock = Audio('radar_lock.mp3', autoplay=False, loop=True)  
 
         # 🎯 Mouse & Window Configuration
-        mouse.visible = False  # 🔥 Hide cursor
-        mouse.locked = True  # 🔥 Lock mouse to window
-        window.exit_button.enabled = False  # 🔥 Prevent accidental window closing
-        window.fullscreen = False  # 🔥 Keep focus on the game
-        window.focused = True  # 🔥 Ensure keyboard inputs always work
+        mouse.visible = False  
+        mouse.locked = True  
+        window.exit_button.enabled = False  
+        window.fullscreen = False  
+        window.focused = True  
 
-        # 🎯 Lista de Targets
         self.targets = targets if targets else []
-
-    # 🔥 ======================= PREVENT MOUSE ESCAPE & FORCE INPUT ======================= 🔥 #
-
-    def check_mouse_bounds(self):
-        """Prevents the mouse from leaving the game window & ensures input works."""
-        if not mouse.locked:
-            mouse.locked = True  # 🔥 Ensures the mouse stays locked inside
-        if not window.focused:
-            window.focused = True  # 🔥 Ensure window stays active
-            held_keys.clear()  # 🔥 Fixes keyboard input not working
 
     # 🔥 ======================= RADAR CONTROLS ======================= 🔥 #
 
     def ligar_radar(self):
         """Ativa o radar e exibe o letreiro na tela."""
         self.radar_ligado = True
-        self.radar_text.enabled = True  # ✅ Show "Radar Ligado"
-        self.som_radar.play()  # ✅ Start normal beep immediately
-        self.target_locked = False  # ✅ Reset lock state
+        self.radar_text.enabled = True  
+        self.som_radar.play()  
+        self.target_locked = False  
+        self.lock_on_timer = None  
+        self.lock_on_delay = random.uniform(1, 3)  
+
         print("Radar ligado - Som ativado")
-        invoke(self.sincronizar_som, delay=self.som_duracao)  # ✅ Ensures sound switching starts
+        invoke(self.check_target_status, delay=0.2)  
 
     def desligar_radar(self):
         """Desativa o radar e remove o letreiro."""
         self.radar_ligado = False
-        self.radar_text.enabled = False  # ✅ Hide "Radar Ligado"
+        self.radar_text.enabled = False  
         self.som_radar.stop()
-        self.som_radar_lock.stop()  # ✅ Stop lock sound if playing
+        self.som_radar_fast.stop()
+        self.som_radar_lock.stop()  
+        self.lock_on_timer = None  
+        self.radar_lock_text.enabled = False  # 🔥 Make sure LOCK text disappears
         print("Radar desligado - Som desativado")
 
-    def sincronizar_som(self):
-        """Muda o som do radar se estiver travado em um alvo."""
-        if not self.radar_ligado:
-            return  # 🔥 Exit early if radar is off
+    # 🔥 ======================= TARGET DETECTION ======================= 🔥 #
 
-        locked = self.is_target_locked()  # ✅ Call raycast less frequently
-
-        if locked and not self.target_locked:
-            self.som_radar.stop()  # ✅ Stop normal beep
-            self.som_radar_lock.play()  # ✅ Play lock sound
-            self.target_locked = True
-            print("🔒 Lock-on! Radar travado em um alvo.")
-
-        elif not locked and self.target_locked:
-            self.som_radar_lock.stop()  # ✅ Stop lock sound
-            self.som_radar.play()  # ✅ Resume normal radar beep
-            self.target_locked = False
-            print("🔄 Lock perdido! Voltando ao beep normal.")
-
-        # 🔥 Instead of calling every frame, reduce frequency to 0.2s
-        invoke(self.sincronizar_som, delay=0.2)
-
-    # 🔥 ======================= TARGET LOCK DETECTION ======================= 🔥 #
-
-    def is_target_locked(self):
-        """Usa raycasting para detectar se há um alvo na mira."""
-        max_distance = 50  # 🔥 Distância máxima do lock-on
+    def is_target_in_view(self):
+        """Checks if the crosshair is pointing at a target using raycasting."""
+        max_distance = 200  
 
         hit_info = raycast(
             origin=camera.world_position, 
             direction=camera.forward,  
             distance=max_distance, 
             ignore=[camera],  
-            debug=True  # 🔍 Debug mode (will draw a ray so you can see it!)
+            debug=True  
         )
 
         if hit_info.hit and hit_info.entity in self.targets:
-            print(f"🎯 Target locked: {hit_info.entity} at {hit_info.distance:.2f} units")
-            return True  # ✅ Target is locked
+            print(f"🎯 Target detected: {hit_info.entity} at {hit_info.distance:.2f} units")
+            return True  
 
-        return False  # ❌ No target detected
+        return False  
+
+    def start_fast_beep_timer(self):
+        """Starts the fast beep and waits 1-3s before locking the target."""
+        if self.radar_ligado and not self.target_locked:
+            self.lock_on_timer = time.time()  
+            self.som_radar.stop()
+            self.som_radar_fast.play()  
+            self.blink_lock_text()  # 🔥 Start blinking "LOCK"
+            print(f"🔄 Fast beep active! Lock-on in {self.lock_on_delay:.2f}s")
+            
+            invoke(self.lock_target, delay=self.lock_on_delay)  
+
+    def blink_lock_text(self):
+        """Makes 'LOCK' text blink while fast beep is active."""
+        if self.radar_ligado and not self.target_locked:
+            self.radar_lock_text.enabled = not self.radar_lock_text.enabled  
+            invoke(self.blink_lock_text, delay=0.3)  # 🔥 Blinks every 0.3s
+
+    def lock_target(self):
+        """Locks the target and switches to lock sound."""
+        if self.radar_ligado and self.is_target_in_view():
+            self.som_radar_fast.stop()  
+            self.som_radar_lock.play()  
+            self.target_locked = True
+            self.radar_lock_text.enabled = True  # 🔥 Stop blinking and keep LOCK visible
+            print("🔒 Lock-On Achieved!")
+
+    # 🔥 ======================= TARGET STATUS CHECK ======================= 🔥 #
+
+    def check_target_status(self):
+        """Checks the target status and switches sounds accordingly."""
+        if not self.radar_ligado:
+            return  
+
+        if self.is_target_in_view():
+            if not self.target_locked and self.lock_on_timer is None:
+                self.start_fast_beep_timer()  
+
+        else:
+            if self.target_locked or self.lock_on_timer:
+                self.reset_to_normal_beep()  
+
+        invoke(self.check_target_status, delay=0.2)  
+
+    def reset_to_normal_beep(self):
+        """Resets the radar to normal beep when the target is lost."""
+        self.som_radar_fast.stop()
+        self.som_radar_lock.stop()
+        self.som_radar.play()  
+        self.target_locked = False
+        self.radar_lock_text.enabled = False  
+        self.lock_on_timer = None  
+        print("🔄 Lock lost! Back to normal beep.")
 
     # 🔥 ======================= INPUT HANDLING ======================= 🔥 #
 
     def input(self, key):
         """Alterna o radar ao pressionar 'R' apenas uma vez."""
-        print(f"🔘 Key Pressed: {key}")  # ✅ Debugging Key Presses
-
         if key == 'r':  
             if not self.radar_ligado:
                 self.ligar_radar()
@@ -130,8 +162,6 @@ class Radar(Entity):
 
     def update(self):
         """Controla a rotação da câmera conforme o movimento do mouse, suavizando a transição."""
-        self.check_mouse_bounds()  # ✅ Prevents mouse escape & ensures input works
-
         self.smooth_x = lerp(self.smooth_x, mouse.velocity[0] * self.sensibilidade, time.dt * 10)
         self.smooth_y = lerp(self.smooth_y, mouse.velocity[1] * self.sensibilidade, time.dt * 10)
 
@@ -139,7 +169,5 @@ class Radar(Entity):
         camera.rotation_x -= self.smooth_y
         camera.rotation_x = clamp(camera.rotation_x, -45, 45)
 
-        # 🔥 Reduce raycasting calls for performance
         if self.radar_ligado and (time.time() - self.last_lock_check > 0.2):
-            self.last_lock_check = time.time()  # ✅ Only update every 0.2s
-            self.sincronizar_som()
+            self.last_lock_check = time.time()  
