@@ -2,22 +2,39 @@ from ursina import *
 from radar import Radar
 from target import Target
 import math
+from perlin_noise import PerlinNoise
+
 
 app = Ursina()
 
 # 🌌 Skybox para o ambiente
 sky = Sky()
 
-# 🟩 Chão (Floor)
-floor = Entity(
-    model='plane',
-    scale=(100, 2, 100),
-    texture='white_cube',
-    texture_scale=(50, 50),
-    color=color.green,
-    collider='box'
-)
-floor.position = (0, 0, 0)
+# 🎛️ Gerar Perlin Noise para o terreno
+noise = PerlinNoise(octaves=3, seed=random.randint(1, 1000000))
+
+# Tamanho do terreno
+terrain_size = 50  # Número de tiles no terreno
+height_multiplier = 5  # Ajusta a altura do terreno
+
+# Criar o terreno proceduralmente
+terrain = []
+for x in range(-terrain_size // 2, terrain_size // 2):
+    for z in range(-terrain_size // 2, terrain_size // 2):
+        y = noise([x * 0.1, z * 0.1])  # Normaliza a entrada do Perlin Noise
+        y = math.floor(y * height_multiplier)  # Ajusta a altura do terreno
+
+        # Criar cada tile do terreno
+        block = Entity(
+            model='cube',
+            scale=(1, 1, 1),
+            position=(x, y, z),
+            texture='white_cube',
+            color=color.green,
+            collider='box'
+        )
+        terrain.append(block)
+
 
 # ✈️ Carregar o modelo F-16
 f16_model = load_model('f16CleanWings.obj')
