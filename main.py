@@ -1,22 +1,24 @@
 from ursina import *
 from radar import Radar
-from camera_controller import CameraController  # Nosso módulo de câmera
-from Level_Teste import load_level_teste
+from input_controller import InputController
 from Level_TestingRange import load_level_testingrange
 import random
 
 app = Ursina()
 
+# Carrega o nível: floor, targets e função de update
+terrain, targets, level_update = load_level_testingrange()
+
+# Cria o Radar com os targets
+radar = Radar(position=(0, 0, 0), targets=targets)
+
 # Skybox
 sky = Sky()
 
-# Instancia o controlador de câmera (movimento e zoom ficam centralizados nele)
-camera_controller = CameraController(sensibilidade=100)
+# Instancia o CameraController, passando a instância do Radar
+input_controller= InputController(radar=radar, sensibilidade=100)
 
-# Carrega o nível: terreno, targets e função de update do nível
-terrain, targets, level_update = load_level_testingrange()
-
-# Criamos uma entidade Level que encapsula o update do nível
+# Cria uma entidade Level para encapsular a função de update do nível
 class Level(Entity):
     def __init__(self, update_func, **kwargs):
         super().__init__(**kwargs)
@@ -24,10 +26,6 @@ class Level(Entity):
     def update(self):
         self.update_func()
 
-# Instancia a entidade Level para garantir que o level_update seja chamado a cada frame.
 level_entity = Level(update_func=level_update)
-
-# Cria o Radar e passa os targets; posiciona-o para visualizar a cena (por exemplo, (0,10,0))
-radar = Radar(position=(0, 0, 0), targets=targets)
 
 app.run()

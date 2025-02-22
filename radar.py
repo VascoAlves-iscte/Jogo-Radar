@@ -11,10 +11,11 @@ class Radar(Entity):
         # 🎯 UI Elements
         # Note que agora o crosshair é aninhado à UI da câmera para não interferir nos inputs 3D.
         self.crosshair = Text('+', scale=2, position=(0,0), origin=(0,0), color=color.yellow, parent=camera.ui)
-        self.crosshair.ignore = True
-
         self.radar_text = Text(text="RADAR LIGADO", scale=2, origin=(0,0), position=(0,0.4), color=color.orange, enabled=False)
         self.radar_lock_text = Text(text="LOCK", scale=2, origin=(0,0), position=(0,0.35), color=color.red, enabled=False)
+        self.crosshair.ignore = True
+        self.radar_text.ignore = True
+        self.radar_lock_text.ignore = True
 
         # 🎯 Radar State Variables
         self.radar_ligado = False
@@ -47,7 +48,7 @@ class Radar(Entity):
         self.target_locked = False  
         self.lock_on_timer = None  
         print("Radar ligado - Som ativado")
-        invoke(self.check_target_status, delay=0.2)  
+        invoke(self.check_target_status, delay=0.3)  
 
     def desligar_radar(self):
         self.radar_ligado = False
@@ -106,7 +107,7 @@ class Radar(Entity):
         else:
             if self.target_locked or self.lock_on_timer:
                 self.reset_to_normal_beep()  
-        invoke(self.check_target_status, delay=0.2)  
+        invoke(self.check_target_status, delay=0.3)  
 
     def reset_to_normal_beep(self):
         self.som_radar_fast.stop()
@@ -117,15 +118,6 @@ class Radar(Entity):
         self.lock_on_timer = None  
         print("🔄 Lock lost! Back to normal beep.")
 
-    def input(self, key):
-        if key == 'r':  
-            if not self.radar_ligado:
-                self.ligar_radar()
-            else:
-                self.desligar_radar()
-
-    # Removemos as definições de movimento da câmera deste update,
-    # pois elas agora estão centralizadas na classe CameraController.
     def update(self):
-        if self.radar_ligado and (time.time() - self.last_lock_check > 0.2):
+        if self.radar_ligado and (time.time() - self.last_lock_check > 0.3):
             self.last_lock_check = time.time()
