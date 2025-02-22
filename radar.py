@@ -13,19 +13,10 @@ class Radar(Entity):
         # 🎯 UI Elements
         self.crosshair = Text('+', scale=2, position=(0, 0), origin=(0, 0), color=color.yellow)
 
-        self.radar_text = Text(
-            text="RADAR LIGADO", 
-            scale=2, origin=(0, 0), 
-            position=(0, 0.4),  
-            color=color.orange, enabled=False
-        )
+        self.radar_text = Text(text="RADAR LIGADO", scale=2, origin=(0, 0), position=(0, 0.4),  color=color.orange, enabled=False)
+        self.crosshair.ignore = True
 
-        self.radar_lock_text = Text(
-            text="LOCK", 
-            scale=2, origin=(0, 0), 
-            position=(0, 0.35),  
-            color=color.red, enabled=False
-        )
+        self.radar_lock_text = Text(text="LOCK", scale=2, origin=(0, 0), position=(0, 0.35),  color=color.red, enabled=False)
 
         # 🎯 Radar State Variables
         self.radar_ligado = False
@@ -59,7 +50,7 @@ class Radar(Entity):
         self.som_radar.play()  
         self.target_locked = False  
         self.lock_on_timer = None  
-        self.lock_on_delay = random.uniform(1, 3)  
+        self.lock_on_delay  
 
         print("Radar ligado - Som ativado")
         invoke(self.check_target_status, delay=0.2)  
@@ -78,8 +69,8 @@ class Radar(Entity):
     # 🔥 ======================= TARGET DETECTION ======================= 🔥 #
 
     def is_target_in_view(self):
-        """Checks if the crosshair is pointing at a target using raycasting."""
-        max_distance = 200  
+        "Verifica se um alvo está na mira e retorna o RCS captado."
+        max_distance = 1000  
 
         hit_info = raycast(
             origin=camera.world_position, 
@@ -90,13 +81,15 @@ class Radar(Entity):
         )
 
         if hit_info.hit and hit_info.entity in self.targets:
+            rcs = hit_info.entity.get_rcs(self.world_position)
+            print(f"📡 RCS captado: {rcs:.2f}")
             print(f"🎯 Target detected: {hit_info.entity} at {hit_info.distance:.2f} units")
             return True  
 
         return False  
 
     def start_fast_beep_timer(self):
-        """Starts the fast beep and waits 1-3s before locking the target."""
+        "Starts the fast beep and waits 1-3s before locking the target."
         if self.radar_ligado and not self.target_locked:
             self.lock_on_timer = time.time()  
             self.som_radar.stop()
@@ -107,13 +100,13 @@ class Radar(Entity):
             invoke(self.lock_target, delay=self.lock_on_delay)  
 
     def blink_lock_text(self):
-        """Makes 'LOCK' text blink while fast beep is active."""
+        "Makes 'LOCK' text blink while fast beep is active."
         if self.radar_ligado and not self.target_locked:
             self.radar_lock_text.enabled = not self.radar_lock_text.enabled  
             invoke(self.blink_lock_text, delay=0.3)  # 🔥 Blinks every 0.3s
 
     def lock_target(self):
-        """Locks the target and switches to lock sound."""
+        "Locks the target and switches to lock sound."
         if self.radar_ligado and self.is_target_in_view():
             self.som_radar_fast.stop()  
             self.som_radar_lock.play()  
@@ -124,7 +117,7 @@ class Radar(Entity):
     # 🔥 ======================= TARGET STATUS CHECK ======================= 🔥 #
 
     def check_target_status(self):
-        """Checks the target status and switches sounds accordingly."""
+        "Checks the target status and switches sounds accordingly."
         if not self.radar_ligado:
             return  
 
@@ -139,7 +132,7 @@ class Radar(Entity):
         invoke(self.check_target_status, delay=0.2)  
 
     def reset_to_normal_beep(self):
-        """Resets the radar to normal beep when the target is lost."""
+        "Resets the radar to normal beep when the target is lost."
         self.som_radar_fast.stop()
         self.som_radar_lock.stop()
         self.som_radar.play()  
@@ -151,7 +144,7 @@ class Radar(Entity):
     # 🔥 ======================= INPUT HANDLING ======================= 🔥 #
 
     def input(self, key):
-        """Alterna o radar ao pressionar 'R' apenas uma vez."""
+        "Alterna o radar ao pressionar 'R' apenas uma vez."
         if key == 'r':  
             if not self.radar_ligado:
                 self.ligar_radar()
@@ -161,7 +154,7 @@ class Radar(Entity):
     # 🔥 ======================= CAMERA MOVEMENT ======================= 🔥 #
 
     def update(self):
-        """Controla a rotação da câmera conforme o movimento do mouse, suavizando a transição."""
+        "Controla a rotação da câmera conforme o movimento do mouse, suavizando a transição."
         self.smooth_x = lerp(self.smooth_x, mouse.velocity[0] * self.sensibilidade, time.dt * 10)
         self.smooth_y = lerp(self.smooth_y, mouse.velocity[1] * self.sensibilidade, time.dt * 10)
 

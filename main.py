@@ -3,7 +3,7 @@ from radar import Radar
 from target import Target
 import math
 from perlin_noise import PerlinNoise
-
+import random
 
 app = Ursina()
 
@@ -21,10 +21,8 @@ height_multiplier = 5  # Ajusta a altura do terreno
 terrain = []
 for x in range(-terrain_size // 2, terrain_size // 2):
     for z in range(-terrain_size // 2, terrain_size // 2):
-        y = noise([x * 0.1, z * 0.1])  # Normaliza a entrada do Perlin Noise
-        y = math.floor(y * height_multiplier)  # Ajusta a altura do terreno
-
-        # Criar cada tile do terreno
+        y = noise([x * 0.1, z * 0.1])
+        y = math.floor(y * height_multiplier)
         block = Entity(
             model='cube',
             scale=(1, 1, 1),
@@ -35,42 +33,67 @@ for x in range(-terrain_size // 2, terrain_size // 2):
         )
         terrain.append(block)
 
-
-# ✈️ Carregar o modelo F-16
+# ✈️ Carregar os modelos
 f16_model = load_model('f16CleanWings.obj')
+f22_model = load_model('f22.obj')
 
 # 🎯 Criar Targets (outros alvos)
 targets = [
-    Target(model_name='sphere', position=(-5, 1, 0), color=color.red, scale=1, collider='box'),
-    Target(model_name='cube', position=(5, 1, 0), color=color.blue, scale=1, collider='box'),
-    Target(model_name='sphere', position=(-5, 10, 70), color=color.red, scale=1, collider='box'),
-    Target(model_name='cube', position=(5, 25, 35), color=color.blue, scale=1, collider='box')
+    Target(model_name='sphere', position=(-5, 1, 0), color=color.red, scale=1, collider='box', material_type="metal"),
+    Target(model_name='cube', position=(5, 1, 0), color=color.blue, scale=1, collider='box', material_type="plastic"),
+    Target(model_name='sphere', position=(-5, 10, 70), color=color.red, scale=1, collider='box', material_type="composite"),
+    Target(model_name='cube', position=(5, 25, 35), color=color.blue, scale=1, collider='box', material_type="metal")
 ]
 
 # 🎯 Criar o target do F-16 que se moverá continuamente ao longo do eixo X.
-f16_target = Target(model=f16_model, position=(0, 3, 50), color=color.pink, scale=1, collider='box')
+f16_target = Target(
+    model=f16_model,
+    position=(0, 3, 50),
+    color=color.pink,
+    scale=1,                 # Mantemos o F-16 com scale=1
+    collider='box',
+    material_type="metal"
+)
 targets.append(f16_target)
 
+# 🎯 Criar o target do F-22, com escala ~1.35 para aproximar melhor a proporção
+f22_target = Target(
+    model=f22_model,
+    position=(0, 5, 50),
+    color=color.orange,
+    scale=0.87,              # Aumentamos a escala para ~1.35
+    collider='box',
+    material_type="stealth"
+)
+targets.append(f22_target)
+
 # Parâmetros de movimento
-speed = 5           # Velocidade constante (unidades por segundo)
-direction = 1       # 1 para mover para a direita, -1 para mover para a esquerda
-x_max = 20          # Limite máximo do eixo X
-x_min = -20         # Limite mínimo do eixo X
+speed = 5
+direction = 1
+x_max = 20
+x_min = -20
 
 def update():
     global direction
-
-    # Atualiza a posição do f16_target no eixo X
+    # Atualiza a posição de ambos os targets (F-16 e F-22) no eixo X
     f16_target.x += direction * speed * time.dt
+    f22_target.x += direction * speed * time.dt
 
-    # Verifica os limites e inverte a direção 
-    if f16_target.x >= x_max and direction == 1:
+    # Se qualquer um dos targets atingir os limites, inverte a direção e ajusta a posição
+    if f16_target.x >= x_max or f22_target.x >= x_max:
         f16_target.x = x_max
-        direction = -1  # Muda a direção para a esquerda
-
-    elif f16_target.x <= x_min and direction == -1:
+        f22_target.x = x_max
+        direction = -1
+    elif f16_target.x <= x_min or f22_target.x <= x_min:
         f16_target.x = x_min
-        direction = 1  # Muda a direção para a direita
+        f22_target.x = x_min
+        direction = 1
+
+def input(key):
+    if key == 'scroll up':
+        camera.fov = clamp(camera.fov - 2, 5, 100)
+    elif key == 'scroll down':
+        camera.fov = clamp(camera.fov + 2, 10, 100)   
 
 # 🎯 Criar o Radar e passar os targets
 radar = Radar(position=(0, 0, -20), targets=targets)
