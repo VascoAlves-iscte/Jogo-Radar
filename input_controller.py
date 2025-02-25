@@ -13,20 +13,32 @@ class InputController(Entity):
         self._r_pressed = False  # Flag para a tecla 'r'
     
     def update(self):
-        sens_factor = camera.fov / self.base_fov
-        self.smooth_x = lerp(self.smooth_x, mouse.velocity[0] * self.sensibilidade * sens_factor, time.dt * 10)
-        self.smooth_y = lerp(self.smooth_y, mouse.velocity[1] * self.sensibilidade * sens_factor, time.dt * 10)
-        
-        camera.rotation_y += self.smooth_x
-        camera.rotation_x -= self.smooth_y
-        camera.rotation_x = clamp(camera.rotation_x, -45, 45)
+
+        if self.radar.target_locked and self.radar.locked_target:
+            # Calcula a direção desejada para a câmera olhar
+            direction = self.radar.locked_target.world_position - camera.world_position
+            desired_y = math.degrees(math.atan2(direction.x, direction.z))
+            horizontal_dist = math.sqrt(direction.x**2 + direction.z**2)
+            desired_x = math.degrees(math.atan2(direction.y, horizontal_dist))
+            # Suaviza a transição: use lerp para os ângulos atuais da câmera
+            camera.rotation_y = desired_y
+            camera.rotation_x = -desired_x
+
+        else:
+            sens_factor = camera.fov / self.base_fov
+            self.smooth_x = lerp(self.smooth_x, mouse.velocity[0] * self.sensibilidade * sens_factor, time.dt * 10)
+            self.smooth_y = lerp(self.smooth_y, mouse.velocity[1] * self.sensibilidade * sens_factor, time.dt * 10)
+            
+            camera.rotation_y += self.smooth_x
+            camera.rotation_x -= self.smooth_y
+            camera.rotation_x = clamp(camera.rotation_x, -45, 45)
     
     def input(self, key):
         # Zoom via scroll
         if key == 'scroll up':
-            camera.fov = clamp(camera.fov - 2, 5, 100)
+            camera.fov = lerp(camera.fov, camera.fov - 5, 0.1)
         elif key == 'scroll down':
-            camera.fov = clamp(camera.fov + 2, 5, 100)
+           camera.fov = lerp(camera.fov, camera.fov + 5, 0.1)
             
         # Toggle radar usando a tecla "r", garantindo que só ocorra uma vez por pressionamento.
         if key == 'r' and not self._r_pressed:

@@ -93,8 +93,8 @@ def calcular_rcs_com_colisao(target, radar_position, max_angle=180):
     # --- Debug: Imprime o nome do modelo do alvo usando get_model_name() ---
     print(f"[DEBUG] Target model: {target.get_model_name()}", flush=True)
     
-    num_rays = 50            # Número de raios a lançar
-    cone_angle = 10          # Ângulo total do cone (em graus)
+    num_rays = 10            # Número de raios a lançar
+    cone_angle = 5          # Ângulo total do cone (em graus)
     
     # Direção central: do radar até o target
     central_direction = (target.world_position - radar_position).normalized()

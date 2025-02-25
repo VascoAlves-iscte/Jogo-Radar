@@ -2,9 +2,10 @@ from ursina import *
 from radar import Radar
 from input_controller import InputController
 from Level_TestingRange import load_level_testingrange
+from Level_Teste import load_level_teste
 import random
 
-app = Ursina()
+app = Ursina()  
 
 # Carrega o nível: floor, targets e função de update
 terrain, targets, level_update = load_level_testingrange()
@@ -25,6 +26,7 @@ class Level(Entity):
         self.update_func = update_func
     def update(self):
         self.update_func()
+
 
 level_entity = Level(update_func=level_update)
 
