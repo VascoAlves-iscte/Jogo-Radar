@@ -1,4 +1,5 @@
 from ursina import *
+from missile import Missile
 
 class InputController(Entity):
     def __init__(self, radar, sensibilidade=100, base_fov=60, **kwargs):
@@ -11,6 +12,7 @@ class InputController(Entity):
         camera.parent = self
         camera.position = (0, 2, 0)
         self._r_pressed = False  # Flag para a tecla 'r'
+        self.target_fov = camera.fov
     
     def update(self):
 
@@ -32,13 +34,18 @@ class InputController(Entity):
             camera.rotation_y += self.smooth_x
             camera.rotation_x -= self.smooth_y
             camera.rotation_x = clamp(camera.rotation_x, -45, 45)
+        
+            
+        # Atualiza o FOV da câmara suavemente em direção ao target_fov:
+        camera.fov = lerp(camera.fov, self.target_fov, time.dt * 5)
+
     
     def input(self, key):
-        # Zoom via scroll
+        # Zoom via scroll: atualiza target_fov em vez de alterar camera.fov diretamente
         if key == 'scroll up':
-            camera.fov = lerp(camera.fov, camera.fov - 5, 0.1)
+            self.target_fov = clamp(self.target_fov - 5, 5, 100)
         elif key == 'scroll down':
-           camera.fov = lerp(camera.fov, camera.fov + 5, 0.1)
+            self.target_fov = clamp(self.target_fov + 5, 5, 100)
             
         # Toggle radar usando a tecla "r", garantindo que só ocorra uma vez por pressionamento.
         if key == 'r' and not self._r_pressed:
@@ -49,3 +56,9 @@ class InputController(Entity):
                 self.radar.desligar_radar()
         elif key == 'r up':
             self._r_pressed = False
+
+        # Lançar míssil com a barra de espaço se houver um lock
+        if key == 'space':
+            if self.radar.target_locked and self.radar.locked_target:
+                # Cria um míssil a partir da posição do radar (ou outra posição definida)
+                Missile(target=self.radar.locked_target, start_pos=self.radar.world_position)

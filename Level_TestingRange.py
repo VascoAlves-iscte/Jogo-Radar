@@ -61,25 +61,33 @@ def load_level_testingrange():
     z_speed = 50
 
     def level_update():
-        # Atualiza a posição horizontal dos outros alvos
-        composite_f16.x += direction[0] * x_speed * time.dt
-        stealth_f22.x += direction[0] * x_speed * time.dt
+        # Atualiza a posição horizontal dos alvos, se existirem e estiverem ativos.
+        if composite_f16 and composite_f16.enabled:
+            composite_f16.x += direction[0] * x_speed * time.dt
+        if stealth_f22 and stealth_f22.enabled:
+            stealth_f22.x += direction[0] * x_speed * time.dt
 
-        # Verifica se algum dos alvos horizontais ultrapassou os limites e inverte a direção
-        if composite_f16.x > 40 or stealth_f22.x > 40:
-            composite_f16.x = min(composite_f16.x, 40)
-            stealth_f22.x = min(stealth_f22.x, 40)
+        # Verifica se algum dos alvos horizontais ultrapassou os limites e inverte a direção.
+        # Aqui, usamos as verificações individualmente para cada target.
+        if (composite_f16 and composite_f16.x > 40) or (stealth_f22 and stealth_f22.x > 40):
+            if composite_f16:
+                composite_f16.x = min(composite_f16.x, 40)
+            if stealth_f22:
+                stealth_f22.x = min(stealth_f22.x, 40)
             direction[0] = -1
-        elif composite_f16.x < -40 or stealth_f22.x < -40:
-            composite_f16.x = max(composite_f16.x, -40)
-            stealth_f22.x = max(stealth_f22.x, -40)
+        elif (composite_f16 and composite_f16.x < -40) or (stealth_f22 and stealth_f22.x < -40):
+            if composite_f16:
+                composite_f16.x = max(composite_f16.x, -40)
+            if stealth_f22:
+                stealth_f22.x = max(stealth_f22.x, -40)
             direction[0] = 1
 
-        # Atualiza a posição do F-16 metal no eixo Z para aproximá-lo do radar (assumindo radar em z=0)
-        metal_f16.z -= z_speed * time.dt
-        # Se o F-16 metal estiver muito próximo (por exemplo, z < 100), reinicia-o para uma posição distante (por exemplo, z = 300)
-        if metal_f16.z < 10:
-            metal_f16.z = 300
+        # Atualiza a posição do F-16 metal no eixo Z, se existir e estiver ativo.
+        if metal_f16 and metal_f16.enabled:
+            metal_f16.z -= z_speed * time.dt
+            # Se o F-16 metal estiver muito próximo (por exemplo, z < 10), reinicia-o para uma posição distante (por exemplo, z = 300)
+            if metal_f16.z < 10:
+                metal_f16.z = 300
 
 
     return floor, targets, level_update
