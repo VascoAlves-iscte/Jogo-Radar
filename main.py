@@ -4,15 +4,18 @@ from input_controller import InputController
 from Level_TestingRange import load_level_testingrange
 from Level_Teste import load_level_teste
 from Level_Arena import load_level_arena
-
+from radar_hud import RadarHUD
 
 app = Ursina()  
 
 # Carrega o nível: floor, targets e função de update
-terrain, targets, level_update = load_level_testingrange()
+terrain, targets, level_update = load_level_arena()
 
 # Cria o Radar com os targets
 radar = Radar(position=(0, 0, 0), targets=targets)
+
+# Instancia a HUD do radar
+radar_hud = RadarHUD(radar=radar, targets=targets)
 
 # Skybox
 sky = Sky()
