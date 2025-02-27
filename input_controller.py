@@ -1,10 +1,12 @@
 from ursina import *
+import math, time
 from missile import Missile
 
 class InputController(Entity):
-    def __init__(self, radar, sensibilidade=100, base_fov=60, **kwargs):
+    def __init__(self, radar, targets, sensibilidade=100, base_fov=60, **kwargs):
         super().__init__(**kwargs)
         self.radar = radar  # Guarda a instância do radar
+        self.target_list = targets  # Guarda a lista de targets
         self.sensibilidade = sensibilidade
         self.base_fov = base_fov
         self.smooth_x = 0
@@ -15,17 +17,15 @@ class InputController(Entity):
         self.target_fov = camera.fov
     
     def update(self):
-
         if self.radar.target_locked and self.radar.locked_target:
-            # Calcula a direção desejada para a câmera olhar
+            # Calcula a direção desejada para a câmera olhar para o target locked
             direction = self.radar.locked_target.world_position - camera.world_position
             desired_y = math.degrees(math.atan2(direction.x, direction.z))
             horizontal_dist = math.sqrt(direction.x**2 + direction.z**2)
             desired_x = math.degrees(math.atan2(direction.y, horizontal_dist))
-            # Suaviza a transição: use lerp para os ângulos atuais da câmera
+            # Suaviza a transição (aqui pode usar lerp se quiser, mas por simplicidade atribuímos diretamente)
             camera.rotation_y = desired_y
             camera.rotation_x = -desired_x
-
         else:
             sens_factor = camera.fov / self.base_fov
             self.smooth_x = lerp(self.smooth_x, mouse.velocity[0] * self.sensibilidade * sens_factor, time.dt * 10)
@@ -35,10 +35,8 @@ class InputController(Entity):
             camera.rotation_x -= self.smooth_y
             camera.rotation_x = clamp(camera.rotation_x, -45, 45)
         
-            
         # Atualiza o FOV da câmara suavemente em direção ao target_fov:
         camera.fov = lerp(camera.fov, self.target_fov, time.dt * 5)
-
     
     def input(self, key):
         # Zoom via scroll: atualiza target_fov em vez de alterar camera.fov diretamente
@@ -60,5 +58,5 @@ class InputController(Entity):
         # Lançar míssil com a barra de espaço se houver um lock
         if key == 'space':
             if self.radar.target_locked and self.radar.locked_target:
-                # Cria um míssil a partir da posição do radar (ou outra posição definida)
-                Missile(target=self.radar.locked_target, start_pos=self.radar.world_position)
+                # Cria um míssil a partir da posição do radar
+                Missile(target=self.radar.locked_target, target_list=self.target_list, start_pos=self.radar.world_position)

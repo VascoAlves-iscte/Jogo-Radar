@@ -1,9 +1,9 @@
 from ursina import *
-import math
+import math, time
 
 class Missile(Entity):
-    def __init__(self, target, start_pos, speed=50, **kwargs):
-        # Cria o míssil; aqui pode usar um modelo simples (por exemplo, uma esfera ou cubo)
+    def __init__(self, target, target_list, start_pos, speed=50, **kwargs):
+        # Cria o míssil (modelo simples, ex: uma esfera)
         super().__init__(
             model='sphere',
             color=color.yellow,
@@ -12,6 +12,7 @@ class Missile(Entity):
             **kwargs
         )
         self.target = target
+        self.target_list = target_list  # Guarda a lista de targets
         self.speed = speed
         self.explosion_distance = 2  # Distância para considerar que o míssil atingiu o alvo
 
@@ -30,9 +31,10 @@ class Missile(Entity):
             destroy(self)
 
     def explode(self):
-        # Pode adicionar efeitos visuais e sonoros aqui
         print("Míssil explodiu!")
-        # Destrói o target
-        destroy(self.target)
-        # Destrói o míssil
-        destroy(self)
+        # Remover o alvo da lista de targets, se estiver presente.
+        if self.target in self.target_list:
+            self.target_list.remove(self.target)
+        # Agendar a destruição do target e do míssil no próximo frame
+        invoke(destroy, self.target, delay=0)
+        invoke(destroy, self, delay=0)

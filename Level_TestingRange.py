@@ -53,41 +53,38 @@ def load_level_testingrange():
     targets.append(composite_f16)
 
 
-    
+    def update_horizontal_target(target, direction, x_speed, dt):
+        # Atualiza a posição horizontal (eixo X) dos alvos que se movem horizontalmente
+        if target.x >= 40:
+            direction[0] = -1
+        elif target.x <= -40:
+            direction[0] = 1
+        target.x += direction[0] * x_speed * dt
 
-    # Velocidade de movimento horizontal (para composite_f16 e stealth_f22)
-    x_speed = 5
-    # Velocidade do F-16 metal no eixo Z (aproximando-se do radar)
-    z_speed = 50
+    def update_metal_target(target, z_speed, dt):
+        # Atualiza o alvo metal_f16 para que se aproxime do radar no eixo Z
+        target.z -= z_speed * dt
+        if target.z < 10:
+            target.z = 300  # Reinicia para uma posição distante
 
     def level_update():
-        # Atualiza a posição horizontal dos alvos, se existirem e estiverem ativos.
-        if composite_f16 and composite_f16.enabled:
-            composite_f16.x += direction[0] * x_speed * time.dt
-        if stealth_f22 and stealth_f22.enabled:
-            stealth_f22.x += direction[0] * x_speed * time.dt
+        # Parâmetros de velocidade (ajustáveis conforme necessário)
+        x_speed = 5         # Velocidade horizontal para os alvos composite e stealth
+        z_speed = 50        # Velocidade do F-16 metal no eixo Z
+        inbound_speed = 30  # Velocidade para os alvos incoming
+        
+        radar_position = Vec3(0, 0, 0)
+        dt = time.dt  # Delta time
+        
+        # Atualiza cada target de acordo com o seu tipo
+        for target in targets:
+            # Se o target for um dos que se movem horizontalmente (composite_f16 ou stealth_f22)
+            if target in (composite_f16, stealth_f22):
+                update_horizontal_target(target, direction, x_speed, dt)
+            # Se o target for o metal_f16 (que se move no eixo Z)
+            elif target == metal_f16:
+                update_metal_target(target, z_speed, dt)
 
-        # Verifica se algum dos alvos horizontais ultrapassou os limites e inverte a direção.
-        # Aqui, usamos as verificações individualmente para cada target.
-        if (composite_f16 and composite_f16.x > 40) or (stealth_f22 and stealth_f22.x > 40):
-            if composite_f16:
-                composite_f16.x = min(composite_f16.x, 40)
-            if stealth_f22:
-                stealth_f22.x = min(stealth_f22.x, 40)
-            direction[0] = -1
-        elif (composite_f16 and composite_f16.x < -40) or (stealth_f22 and stealth_f22.x < -40):
-            if composite_f16:
-                composite_f16.x = max(composite_f16.x, -40)
-            if stealth_f22:
-                stealth_f22.x = max(stealth_f22.x, -40)
-            direction[0] = 1
-
-        # Atualiza a posição do F-16 metal no eixo Z, se existir e estiver ativo.
-        if metal_f16 and metal_f16.enabled:
-            metal_f16.z -= z_speed * time.dt
-            # Se o F-16 metal estiver muito próximo (por exemplo, z < 10), reinicia-o para uma posição distante (por exemplo, z = 300)
-            if metal_f16.z < 10:
-                metal_f16.z = 300
 
 
     return floor, targets, level_update

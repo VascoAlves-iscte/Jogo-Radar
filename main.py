@@ -3,7 +3,8 @@ from radar import Radar
 from input_controller import InputController
 from Level_TestingRange import load_level_testingrange
 from Level_Teste import load_level_teste
-import random
+from Level_Arena import load_level_arena
+
 
 app = Ursina()  
 
@@ -17,7 +18,7 @@ radar = Radar(position=(0, 0, 0), targets=targets)
 sky = Sky()
 
 # Instancia o CameraController, passando a instância do Radar
-input_controller= InputController(radar=radar, sensibilidade=100)
+input_controller= InputController(radar=radar,targets=targets, sensibilidade=100)
 
 # Cria uma entidade Level para encapsular a função de update do nível
 class Level(Entity):
