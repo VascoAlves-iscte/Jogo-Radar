@@ -142,7 +142,7 @@ class RadarHUD(Entity):
             angle = math.degrees(math.atan2(fwd.x, fwd.y))
             self.radar_direction_indicator.rotation_z = angle
 
-        # --- Atualiza o Painel FOV (apenas targets dentro do FOV atual da câmera) ---
+        # --- Atualiza o Painel FOV (apenas targets dentro do FOV atual da câmera, horizontal e vertical) ---
         for target, indicator in list(self.fov_indicators.items()):
             if not target or not target.enabled:
                 indicator.enabled = False
@@ -151,28 +151,32 @@ class RadarHUD(Entity):
 
             # Calcula o vetor do target em relação ao radar
             rel = target.world_position - self.radar.world_position
-            # Calcula o ângulo do target em relação ao eixo Z (frente do radar)
+
+            # -------------------- Horizontal --------------------
             angle = math.degrees(math.atan2(rel.x, rel.z))
-            # Normaliza a diferença entre o ângulo do target e a rotação horizontal da câmera para o intervalo [-180, 180]
             relative_angle = (angle - camera.rotation_y + 180) % 360 - 180
-            # Define o FOV atual com base no zoom (por exemplo, ±(camera.fov/2))
-            half_fov = camera.fov / 2.0
-            if abs(relative_angle) > half_fov:
+
+            half_hfov = camera.fov / 2.0
+            if abs(relative_angle) > half_hfov:
                 indicator.enabled = False
                 continue
             else:
                 indicator.enabled = True
 
-            # Mapeia o ângulo relativo (de -half_fov a half_fov) para uma coordenada horizontal normalizada de 0 a 1
-            ui_x = (relative_angle + half_fov) / (2 * half_fov)
+            ui_x = ((relative_angle + half_hfov) / (2 * half_hfov))
 
-            # Para a coordenada vertical, usa a projeção da posição (ou um fallback baseado na altitude)
-            screen_pos = self.world_to_screen_point(target.world_position)
-            if screen_pos.x == -100 and screen_pos.y == -100:
-                vertical_range = 100.0  # ajuste conforme necessário
-                dy = target.world_position.y - self.radar.world_position.y
-                ui_y = 0.5 + (dy / vertical_range)
-            else:
-                ui_y = screen_pos.y
+            # -------------------- Vertical --------------------
+            horiz_dist = (math.sqrt(rel.x**2 + rel.z**2))
+            vertical_angle = math.degrees(math.atan2(rel.y, horiz_dist))
+            relative_v_angle = (camera.rotation_x + vertical_angle)
 
-            indicator.position = (ui_x - 0.5, ui_y - 0.5)
+            half_vfov = camera.fov / 2.0
+            if abs(relative_v_angle) > half_vfov:
+                indicator.enabled = False
+                continue
+
+            ui_y = ((relative_v_angle + half_vfov) / (2 * half_vfov))
+     
+            indicator.position = (ui_x - 0.5,ui_y - 0.5)
+
+

@@ -93,7 +93,8 @@ def load_level_arena():
             angle = random.uniform(0, 2 * math.pi)
             new_x = new_distance * math.cos(angle)
             new_z = new_distance * math.sin(angle)
-            target.position = Vec3(new_x, target.position.y, new_z)
+            new_y = random.uniform(0, 500)
+            target.position = Vec3(new_x, new_y, new_z)
 
     def update_horizontal_target(target, direction, x_speed, dt):
         # Atualiza a posição horizontal (eixo X) dos alvos que se movem horizontalmente
@@ -114,21 +115,22 @@ def load_level_arena():
         x_speed = 5         # Velocidade horizontal para os alvos composite e stealth
         z_speed = 50        # Velocidade do F-16 metal no eixo Z
         inbound_speed = 30  # Velocidade para os alvos incoming
-        
+
         radar_position = Vec3(0, 0, 0)
         dt = time.dt  # Delta time
-        
+
         # Atualiza cada target de acordo com o seu tipo
         for target in targets:
-            # Se o target for um alvo incoming (possui atributo 'incoming' True)
             if hasattr(target, 'incoming') and target.incoming:
                 update_incoming_target(target, radar_position, inbound_speed, dt)
-            # Se o target for um dos que se movem horizontalmente (composite_f16 ou stealth_f22)
             elif target in (composite_f16, stealth_f22):
                 update_horizontal_target(target, direction, x_speed, dt)
-            # Se o target for o metal_f16 (que se move no eixo Z)
             elif target == metal_f16:
                 update_metal_target(target, z_speed, dt)
+        
+        # Atualiza a orientação de cada target para que fiquem virados para o radar
+        for target in targets:
+            target.look_at(radar_position)
 
     
     return floor, targets, level_update
