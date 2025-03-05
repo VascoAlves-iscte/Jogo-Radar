@@ -1,9 +1,9 @@
 from ursina import *
-import math, time
+import math, time, random  
+from target import Target
 
 class Missile(Entity):
     def __init__(self, target, target_list, start_pos, speed=50, **kwargs):
-        # Cria o míssil (modelo simples, ex: uma esfera)
         super().__init__(
             model='sphere',
             color=color.yellow,
@@ -18,9 +18,27 @@ class Missile(Entity):
 
     def update(self):
         if self.target and self.target.enabled:
-            # Calcula a direção do míssil para o target
+            # Se o target ativou contramedidas, verifica chance de desvio
+            if hasattr(self.target, 'countermeasures_active') and self.target.countermeasures_active:
+                radar_position = Vec3(0, 0, 0)
+                effective_rcs = self.target.get_rcs(radar_position)
+                distance_val = (self.target.world_position - radar_position).length()
+                # Parâmetros ajustáveis para a fórmula
+                base_chance = 0.1
+                reference_distance = 100.0
+                reference_rcs = 50.0
+                # Cálculo da probabilidade
+                prob_miss = base_chance * (distance_val / reference_distance) * (reference_rcs / (effective_rcs + 0.001))
+                prob_miss = prob_miss*0.01
+                if random.random() < prob_miss:
+                    print("Míssil desviou devido às contramedidas!")
+                    destroy(self)
+                    return
+                else:
+                    self.target.deactivate_countermeasures()
+
+            # Cálculo normal da direção e movimentação do míssil
             direction = (self.target.world_position - self.world_position).normalized()
-            # Move o míssil
             self.world_position += direction * self.speed * time.dt
 
             # Se o míssil se aproximou do target, "explode"
@@ -32,9 +50,7 @@ class Missile(Entity):
 
     def explode(self):
         print("Míssil explodiu!")
-        # Remover o alvo da lista de targets, se estiver presente.
         if self.target in self.target_list:
             self.target_list.remove(self.target)
-        # Agendar a destruição do target e do míssil no próximo frame
         invoke(destroy, self.target, delay=0)
         invoke(destroy, self, delay=0)

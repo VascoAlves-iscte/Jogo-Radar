@@ -5,47 +5,50 @@ from missile import Missile
 class InputController(Entity):
     def __init__(self, radar, targets, sensibilidade=100, base_fov=60, **kwargs):
         super().__init__(**kwargs)
-        self.radar = radar  # Guarda a instância do radar
-        self.target_list = targets  # Guarda a lista de targets
+        self.radar = radar            # Instância do radar
+        self.target_list = targets    # Lista de targets
         self.sensibilidade = sensibilidade
         self.base_fov = base_fov
         self.smooth_x = 0
         self.smooth_y = 0
         camera.parent = self
         camera.position = (0, 2, 0)
-        self._r_pressed = False  # Flag para a tecla 'r'
+        self._r_pressed = False       # Flag para a tecla 'r'
         self.target_fov = camera.fov
-    
+
+        # Controle de lançamento de mísseis
+        self.missile_capacity = 4     # Número máximo de mísseis por rodada
+        self.missile_count = 0        # Mísseis já lançados na rodada
+        self.reload_delay = 3         # Tempo de reload (em segundos)
+        self.reloading = False        # Flag que indica se está recarregando
+        self.reload_start_time = None
+
     def update(self):
         if self.radar.target_locked and self.radar.locked_target:
-            # Calcula a direção desejada para a câmera olhar para o target locked
             direction = self.radar.locked_target.world_position - camera.world_position
             desired_y = math.degrees(math.atan2(direction.x, direction.z))
             horizontal_dist = math.sqrt(direction.x**2 + direction.z**2)
             desired_x = math.degrees(math.atan2(direction.y, horizontal_dist))
-            # Suaviza a transição (aqui pode usar lerp se quiser, mas por simplicidade atribuímos diretamente)
             camera.rotation_y = desired_y
             camera.rotation_x = -desired_x
         else:
             sens_factor = camera.fov / self.base_fov
             self.smooth_x = lerp(self.smooth_x, mouse.velocity[0] * self.sensibilidade * sens_factor, time.dt * 10)
             self.smooth_y = lerp(self.smooth_y, mouse.velocity[1] * self.sensibilidade * sens_factor, time.dt * 10)
-            
             camera.rotation_y += self.smooth_x
             camera.rotation_x -= self.smooth_y
             camera.rotation_x = clamp(camera.rotation_x, -45, 45)
         
-        # Atualiza o FOV da câmara suavemente em direção ao target_fov:
         camera.fov = lerp(camera.fov, self.target_fov, time.dt * 5)
     
     def input(self, key):
-        # Zoom via scroll: atualiza target_fov em vez de alterar camera.fov diretamente
+        # Zoom via scroll
         if key == 'scroll up':
             self.target_fov = clamp(self.target_fov - 5, 5, 100)
         elif key == 'scroll down':
             self.target_fov = clamp(self.target_fov + 5, 5, 100)
             
-        # Toggle radar usando a tecla "r", garantindo que só ocorra uma vez por pressionamento.
+        # Toggle radar com a tecla "r"
         if key == 'r' and not self._r_pressed:
             self._r_pressed = True
             if not self.radar.radar_ligado:
@@ -55,8 +58,31 @@ class InputController(Entity):
         elif key == 'r up':
             self._r_pressed = False
 
-        # Lançar míssil com a barra de espaço se houver um lock
+        # Lançar míssil com a barra de espaço, respeitando o limite e o reload
         if key == 'space':
             if self.radar.target_locked and self.radar.locked_target:
-                # Cria um míssil a partir da posição do radar
-                Missile(target=self.radar.locked_target, target_list=self.target_list, start_pos=self.radar.world_position)
+                if not self.reloading:
+                    if self.missile_count < self.missile_capacity:
+                        Missile(target=self.radar.locked_target, target_list=self.target_list, start_pos=self.radar.world_position)
+                        self.missile_count += 1
+                        print(f"Míssil lançado! [{self.missile_count}/{self.missile_capacity}]")
+                        if self.missile_count == self.missile_capacity:
+                            print("Limite de mísseis atingido. Recarregando em 3 segundos...")
+                            self.reloading = True
+                            self.reload_start_time = time.time()
+                            invoke(self.reload_missiles, delay=self.reload_delay)
+                    else:
+                        print("Aguarde o reload...")
+                else:
+                    print("Recarregando, aguarde...")
+
+        # Ativar contramedidas com a tecla 'c'
+        if key == 'c':
+            if self.radar.target_locked and self.radar.locked_target:
+                self.radar.locked_target.activate_countermeasures()
+
+    def reload_missiles(self):
+        self.missile_count = 0
+        self.reloading = False
+        self.reload_start_time = None
+        print("Recarregado! Pode lançar novos mísseis.")

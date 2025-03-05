@@ -75,8 +75,8 @@ class Radar(Entity):
         if hit_info.hit and hit_info.entity in self.targets:
             rcs = hit_info.entity.get_rcs(self.world_position)
             self.locked_target=hit_info.entity
-            print(f"📡 RCS captado: {rcs:.2f}")
-            print(f"🎯 Target detected: {hit_info.entity} at {hit_info.distance:.2f} units")
+            #print(f"📡 RCS captado: {rcs:.2f}")
+           #print(f"🎯 Target detected: {hit_info.entity} at {hit_info.distance:.2f} units")
             return True  
         return False  
 

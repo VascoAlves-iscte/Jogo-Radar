@@ -91,7 +91,7 @@ def calcular_rcs_com_colisao(target, radar_position, max_angle=180):
     fazendo com que alvos distantes tenham um RCS efetivo menor.
     """
     # --- Debug: Imprime o nome do modelo do alvo usando get_model_name() ---
-    print(f"[DEBUG] Target model: {target.get_model_name()}", flush=True)
+    #print(f"[DEBUG] Target model: {target.get_model_name()}", flush=True)
     
     num_rays = 10            # Número de raios a lançar
     cone_angle = 5          # Ângulo total do cone (em graus)
@@ -126,19 +126,19 @@ def calcular_rcs_com_colisao(target, radar_position, max_angle=180):
         radar_direction = (radar_position - target.world_position).normalized()
         reflection_angle = math.degrees(math.acos(max(-1.0, min(1.0, reflected_wave.dot(radar_direction)))))
         
-        print(f"\n[DEBUG] Ray {i}:", flush=True)
-        print(f"    Delta: {delta:.2f}°", flush=True)
-        print(f"    Incidence Angle: {incidence_angle:.2f}°", flush=True)
-        print(f"    Reflection Angle: {reflection_angle:.2f}°", flush=True)
-        print(f"    Reflection Coefficient: {reflection_coefficient:.4f}", flush=True)
-        print(f"[DEBUG] Target model: {target.get_model_name()}", flush=True)
+        #print(f"\n[DEBUG] Ray {i}:", flush=True)
+        #print(f"    Delta: {delta:.2f}°", flush=True)
+        #print(f"    Incidence Angle: {incidence_angle:.2f}°", flush=True)
+        #print(f"    Reflection Angle: {reflection_angle:.2f}°", flush=True)
+       # print(f"    Reflection Coefficient: {reflection_coefficient:.4f}", flush=True)
+       #print(f"[DEBUG] Target model: {target.get_model_name()}", flush=True)
         
         # Calcula o RCS para esse raio com max_angle = 180°
         rcs_value = reflection_coefficient * (1 - (reflection_angle / max_angle)) * 100
-        print(f"    RCS (ray): {rcs_value:.2f}", flush=True)
+        #print(f"    RCS (ray): {rcs_value:.2f}", flush=True)
         
         weight = new_direction.dot(central_direction)
-        print(f"    Weight: {weight:.2f}", flush=True)
+       # print(f"    Weight: {weight:.2f}", flush=True)
         rcs_sum += rcs_value * weight
         weight_sum += weight
     
@@ -153,6 +153,6 @@ def calcular_rcs_com_colisao(target, radar_position, max_angle=180):
     attenuation = 1 / (1 + (distance / d0) ** 2)
     effective_rcs = weighted_rcs * attenuation
 
-    print(f"\n[DEBUG] Weighted RCS: {weighted_rcs:.2f}", flush=True)
-    print(f"[DEBUG] Distance: {distance:.2f}  Attenuation: {attenuation:.2f}  Effective RCS: {effective_rcs:.2f}", flush=True)
+    #print(f"\n[DEBUG] Weighted RCS: {weighted_rcs:.2f}", flush=True)
+    #print(f"[DEBUG] Distance: {distance:.2f}  Attenuation: {attenuation:.2f}  Effective RCS: {effective_rcs:.2f}", flush=True)
     return effective_rcs

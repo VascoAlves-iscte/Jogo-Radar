@@ -2,12 +2,44 @@ from ursina import *
 import math
 from ursina import Vec2, Vec4, camera, application
 from panda3d.core import Point3
+import time
 
 class RadarHUD(Entity):
-    def __init__(self, radar, targets, **kwargs):
+    def __init__(self, radar, targets,input_controller, **kwargs):
         super().__init__(parent=camera.ui, **kwargs)
         self.radar = radar
         self.targets = targets
+        self.input_controller = input_controller  
+
+        # --- Contador de mísseis ---  ------------------------------------rever daqui
+        self.missile_text = Text(
+            text="Mísseis: 4/4", 
+            scale=2, 
+            position=(-0.5, 0.5), 
+            origin=(0,0), 
+            color=color.black, 
+            parent=camera.ui
+        )
+
+        # --- Barra de reload ---
+        # Fundo da barra (barra de fundo)
+        self.reload_background = Entity(
+            model='quad',
+            parent=camera.ui,
+            color=color.dark_gray,
+            position=(0, -0.8),
+            scale=(0.5, 0.05)
+        )
+        # Barra de progresso (a ser atualizada)
+        self.reload_bar = Entity(
+            model='quad',
+            parent=camera.ui,
+            color=color.lime,
+            position=(0.7, -0.2),  # origem à esquerda
+            origin=(-0.5, 0),
+            scale=(0, 0.05)
+        )
+        #-------------------------------------------------------------ate aqui
 
         # --- Minimapa ---
         # Borda do minimapa (um círculo preto um pouco maior que o fundo)
@@ -113,6 +145,21 @@ class RadarHUD(Entity):
             return Vec2(-100, -100)
 
     def update(self):
+
+        # --- Atualiza o contador de mísseis ---
+        # Calcula os mísseis restantes (capacidade - mísseis já lançados)
+        available = self.input_controller.missile_capacity - self.input_controller.missile_count
+        self.missile_text.text = f"Mísseis: {available}/{self.input_controller.missile_capacity}"
+
+        # --- Atualiza a barra de reload ---
+        if self.input_controller.reloading and self.input_controller.reload_start_time:
+            elapsed = time.time() - self.input_controller.reload_start_time
+            progress = min(elapsed / self.input_controller.reload_delay, 1)
+            # A barra enche até a largura do reload_background (0.5)
+            self.reload_bar.scale_x = progress * self.reload_background.scale_x
+        else:
+            self.reload_bar.scale_x = 0
+        
         # --- Atualiza o Minimapa ---
         for target, indicator in list(self.minimap_indicators.items()):
             if not target or not target.enabled:

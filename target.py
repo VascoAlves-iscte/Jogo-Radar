@@ -1,4 +1,4 @@
-from ursina import Entity, color
+from ursina import Entity, color, invoke
 
 class Target(Entity):
     """
@@ -17,13 +17,12 @@ class Target(Entity):
             model = model_name
         super().__init__(model=model, position=position, scale=scale, color=color, **kwargs)
         self.material_type = material_type  
-        self.refractive_index = self.MATERIALS.get(material_type, 1.5)  
+        self.refractive_index = self.MATERIALS.get(material_type, 1.5)
+        # Propriedade para contramedidas:
+        self.countermeasures_active = False
+        self.countermeasures_uses = 3  # Cada target pode usar contramedidas 3 vezes
 
     def get_rcs(self, radar_position):
-        """
-        Retorna o RCS calculado para este alvo.
-        Agora utiliza a função 'calcular_rcs_com_colisao', que emprega colisão para extrair a normal do ponto de impacto.
-        """
         from rcs import calcular_rcs_com_colisao  # Importação interna para evitar import circular
         return calcular_rcs_com_colisao(self, radar_position)
     
@@ -34,3 +33,15 @@ class Target(Entity):
             return self.model_name
         else:
             return str(self.model)
+
+    def activate_countermeasures(self):
+        if self.countermeasures_uses > 0:
+            self.countermeasures_uses -= 1
+            self.countermeasures_active = True
+            print(f"Contramedidas ativadas! Usos restantes: {self.countermeasures_uses}")
+            invoke(self.deactivate_countermeasures, delay=5)
+        else:
+            print("Sem usos de contramedidas restantes.")
+
+    def deactivate_countermeasures(self):
+        self.countermeasures_active = False

@@ -14,14 +14,14 @@ terrain, targets, level_update = load_level_arena()
 # Cria o Radar com os targets
 radar = Radar(position=(0, 0, 0), targets=targets)
 
+# Instancia o CameraController, passando a instância do Radar
+input_controller= InputController(radar=radar,targets=targets, sensibilidade=100)
+
 # Instancia a HUD do radar
-radar_hud = RadarHUD(radar=radar, targets=targets)
+radar_hud = RadarHUD(radar=radar, targets=targets, input_controller=input_controller)
 
 # Skybox
 sky = Sky()
-
-# Instancia o CameraController, passando a instância do Radar
-input_controller= InputController(radar=radar,targets=targets, sensibilidade=100)
 
 # Cria uma entidade Level para encapsular a função de update do nível
 class Level(Entity):
