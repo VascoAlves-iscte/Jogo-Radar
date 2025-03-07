@@ -15,7 +15,7 @@ class RadarHUD(Entity):
         self.missile_text = Text(
             text="Mísseis: 4/4", 
             scale=2, 
-            position=(-0.5, 0.5), 
+            position=(0, -0.45), 
             origin=(0,0), 
             color=color.black, 
             parent=camera.ui
@@ -27,7 +27,7 @@ class RadarHUD(Entity):
             model='quad',
             parent=camera.ui,
             color=color.dark_gray,
-            position=(0, -0.8),
+            position=(window.bottom),
             scale=(0.5, 0.05)
         )
         # Barra de progresso (a ser atualizada)
@@ -35,7 +35,7 @@ class RadarHUD(Entity):
             model='quad',
             parent=camera.ui,
             color=color.lime,
-            position=(0.7, -0.2),  # origem à esquerda
+            position=(-0.25,-0.5),  # origem à esquerda
             origin=(-0.5, 0),
             scale=(0, 0.05)
         )

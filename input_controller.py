@@ -17,11 +17,13 @@ class InputController(Entity):
         self.target_fov = camera.fov
 
         # Controle de lançamento de mísseis
-        self.missile_capacity = 4     # Número máximo de mísseis por rodada
-        self.missile_count = 0        # Mísseis já lançados na rodada
+        self.missile_capacity = 4     # Número máximo de mísseis por carregador
+        self.missile_count = 0        # Mísseis já lançados no carregador atual
         self.reload_delay = 3         # Tempo de reload (em segundos)
-        self.reloading = False        # Flag que indica se está recarregando
+        self.reloading = False        # Flag que indica se está a recarregar
         self.reload_start_time = None
+        self.countermz_start_time=None
+        self.countermz_delay=1.5
 
     def update(self):
         if self.radar.target_locked and self.radar.locked_target:
@@ -66,6 +68,8 @@ class InputController(Entity):
                         Missile(target=self.radar.locked_target, target_list=self.target_list, start_pos=self.radar.world_position)
                         self.missile_count += 1
                         print(f"Míssil lançado! [{self.missile_count}/{self.missile_capacity}]")
+                        self.countermz_start_time = time.time()
+                        invoke(self.countermz, delay=self.reload_delay)                     
                         if self.missile_count == self.missile_capacity:
                             print("Limite de mísseis atingido. Recarregando em 3 segundos...")
                             self.reloading = True
@@ -76,7 +80,7 @@ class InputController(Entity):
                 else:
                     print("Recarregando, aguarde...")
 
-        # Ativar contramedidas com a tecla 'c'
+        # Teste manual de ativar contramedidas com a tecla 'c'
         if key == 'c':
             if self.radar.target_locked and self.radar.locked_target:
                 self.radar.locked_target.activate_countermeasures()
@@ -86,3 +90,7 @@ class InputController(Entity):
         self.reloading = False
         self.reload_start_time = None
         print("Recarregado! Pode lançar novos mísseis.")
+    
+    def countermz (self):
+        self.radar.locked_target.activate_countermeasures()
+        self.countermz_start_time = None
