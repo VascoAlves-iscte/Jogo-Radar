@@ -1,0 +1,13 @@
+Explicação RCS
+Radar cross-section (RCS) is a measure of how detectable an object is by radar. 
+A larger RCS indicates that an object is more easily detected
+An object reflects a limited amount of radar energy back to the source. The factors that influence this include:
+    -the material with which the target is made;
+    -the absolute size of the target;
+    -the incident angle (angle at which the radar beam hits a particular portion of the target, which depends upon the shape of the target and its orientation to the radar source);
+    -the reflected angle (angle at which the reflected beam leaves the part of the target hit; it depends upon incident angle);
+
+Explicar stealth:
+specific shape for planes that tended to reduce detection by redirecting electromagnetic radiation waves from radars.
+Radiation-absorbent material was also tested and made to reduce or block radar signals that reflect off the surfaces of aircraft.
+
