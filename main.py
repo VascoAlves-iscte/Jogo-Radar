@@ -4,6 +4,7 @@ from input_controller import InputController
 from Level_TestingRange import load_level_testingrange
 from Level_Teste import load_level_teste
 from Level_Arena import load_level_arena
+from Level_Tutorial import load_level_tutorial
 from radar_hud import RadarHUD
 
 app = Ursina()      

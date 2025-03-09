@@ -13,7 +13,7 @@ def load_level_arena():
       - targets: uma lista com todos os targets criados (originais e incoming),
       - level_update: função que atualiza a posição dos targets móveis.
     """
-    # Cria o chão (shooting range): um plano de 20 m de largura x 1000 m de comprimento.
+    # Cria o chão : um plano de 20 m de largura x 1000 m de comprimento.
     floor = Entity(
         model='plane',
         scale=(20, 1, 1000),
