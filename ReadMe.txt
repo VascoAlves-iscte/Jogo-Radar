@@ -35,7 +35,7 @@ python main.py
 - Detecção automática e lock dos alvos.
 - Indicação visual de  LOCK.
 
-### Controlador de Entrada (`input_controller.py`)
+### Controlador de inputs (`input_controller.py`)
 - Controle suave da câmera.
 - Zoom usando roda do mouse.
 - Controle do radar (tecla 'r').
