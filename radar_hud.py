@@ -44,6 +44,7 @@ class RadarHUD(Entity):
             color=color.black,
             scale=0.31,
             position=(0.7, -0.33)
+            #position=(window.bottom_right)
         )
         verde_escuro = Vec4(0, 0.5, 0, 1)
         self.minimap = Entity(
@@ -52,6 +53,8 @@ class RadarHUD(Entity):
             color=verde_escuro,
             scale=0.3,
             position=(0.7, -0.33)
+            #position=(window.bottom_right)
+
         )
         self.minimap_radius = 0.5
 

@@ -7,6 +7,10 @@ from Level_Arena import load_level_arena
 from Level_Tutorial import load_level_tutorial
 from radar_hud import RadarHUD
 
+# Configure the window size and aspect ratio (16:9)
+#window.size = (1920, 1080)  # Set the window size to 1280x720 (16:9 aspect ratio)
+#window.position = (0, 0)  # Center the window on the screen
+
 app = Ursina()
 
 # GameController class to manage game state and scene transitions
@@ -20,8 +24,7 @@ class GameController(Entity):
         self.game_running = False  # Flag to track if the game is running
         self.menu_entities = []  # List to store menu entities
         self.create_main_menu()
-        
-        
+
     def start_game(self, level_loader):
         # Clear the current scene
         self.stop_game()
@@ -52,8 +55,11 @@ class GameController(Entity):
                 if self.game_running_flag:  # Only update if the game is running
                     self.update_func()
 
+        # Set the game state to running before creating the Level
+        self.game_running = True
+
+        # Create and add the Level to the scene
         self.current_level = Level(update_func=level_update, game_running_flag=self.game_running)
-        self.game_running = True  # Set the game state to running
 
     def stop_game(self):
         # Stop all game-related entities and reset the game state
@@ -82,21 +88,31 @@ class GameController(Entity):
         self.stop_game()
 
         # Load the custom background image
-        background_texture = load_texture("Radar Na Colina.png")
+        background_texture = load_texture("assets/Radar Na Colina.png")
+
+        # Calculate the aspect ratio of the image (1920x1080)
+        image_width = 1920
+        image_height = 1080
+        aspect_ratio = image_width / image_height
+
+        # Define the height of the background (adjust as needed)
+        background_height = 1
+        background_width = background_height * aspect_ratio
 
         # Create the main menu background using the custom texture
         background = Entity(
             model='quad', 
-            scale=(2, 1.5), 
+            scale=(background_width, background_height),  # Maintain aspect ratio
             texture=background_texture,  # Use the loaded texture
-            parent=camera.ui  # Ensure it's rendered in the UI layer
+            parent=camera.ui,  # Ensure it's rendered in the UI layer
+            position=(0, 0)  # Center the background
         )
         self.menu_entities.append(background)
 
         # Create the buttons
-        tutorial_button = Button(text='Tutorial', color=color.blue, scale=(0.3, 0.1), position=(-0.5, 0.2))
-        arena_button = Button(text='Arena', color=color.red, scale=(0.3, 0.1), position=(0, 0.2))
-        quit_button = Button(text='Quit', color=color.green, scale=(0.3, 0.1), position=(0.5, 0.2))
+        tutorial_button = Button(text='Tutorial', color=color.blue, scale=(0.3, 0.1), position=(-0.5, -0.2))
+        arena_button = Button(text='Arena', color=color.red, scale=(0.3, 0.1), position=(0, -0.2))
+        quit_button = Button(text='Quit', color=color.green, scale=(0.3, 0.1), position=(0.5, -0.2))
 
         # Assign actions to the buttons
         tutorial_button.on_click = lambda: self.start_game(load_level_tutorial)
