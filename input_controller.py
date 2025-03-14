@@ -3,12 +3,13 @@ import math, time
 from missile import Missile
 
 class InputController(Entity):
-    def __init__(self, radar, targets, sensibilidade=100, base_fov=60, **kwargs):
+    def __init__(self, radar, targets,game_controller, sensibilidade=100, base_fov=60, **kwargs):
         super().__init__(**kwargs)
         self.radar = radar            # Instância do radar
         self.target_list = targets    # Lista de targets
         self.sensibilidade = sensibilidade
         self.base_fov = base_fov
+        self.game_controller = game_controller
         self.smooth_x = 0
         self.smooth_y = 0
         camera.parent = self
@@ -84,6 +85,11 @@ class InputController(Entity):
         if key == 'c':
             if self.radar.target_locked and self.radar.locked_target:
                 self.radar.locked_target.activate_countermeasures()
+        
+        if key == 'escape':
+            if self.game_controller.game_running:
+                self.game_controller.create_pause_menu()
+
 
     def reload_missiles(self):
         self.missile_count = 0
