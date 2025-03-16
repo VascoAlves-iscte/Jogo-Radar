@@ -1,16 +1,16 @@
 Tutorial: Funcionamento do Radar, Deteção de Alvos e Mecânicas do Jogo
-1. Introdução: Jogo Didático de Radar!
+1. Introdução:
 Bem-vindo ao tutorial ! Aqui, vais aprender como funciona um sistema de radar, o conceito de RCS (Radar Cross-Section), 
 a influência dos materiais na deteção, e como a tecnologia stealth e as contramedidas de chaff/flare são usadas para evitar 
 a deteção e destruição. Tudo isto é apresentado de forma interativa, num jogo onde o teu objetivo é detetar e destruir alvos
  que se aproximam do teu radar. Vamos começar com uma explicação básica sobre o funcionamento do radar.
 
 2. Como Funciona um Radar? O que é RCS? Materiais e a Sua Influência na Deteção
-O radar (Radio Detection and Ranging) é um sistema que usa ondas de rádio para detetar e localizar objetos à distância. 
+Um radar é um sistema que usa ondas de rádio para detetar e localizar objetos à distância. 
 Funciona enviando um sinal de rádio (onda eletromagnética) na direção de um alvo. Quando esse sinal atinge o alvo, parte da energia 
 é refletida de volta para o radar. O sistema analisa então o sinal refletido para determinar a distância, a velocidade e a direção do alvo.
 
-O RCS (Radar Cross-Section) é uma medida de quão detetável um objeto é pelo radar. Um RCS maior significa que o objeto reflete mais energia 
+A RCS (Radar Cross-Section) é uma medida de quão detetável um objeto é pelo radar. Um RCS maior significa que o objeto reflete mais energia 
 de volta para o radar, tornando-o mais fácil de detetar. O RCS depende de vários fatores:
 
 Material do Alvo: Diferentes materiais refletem a energia do radar de forma diferente. 

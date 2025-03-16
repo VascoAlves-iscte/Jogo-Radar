@@ -5,20 +5,19 @@ import time
 
 class RadarHUD(Entity):
     """
-    RadarHUD manages the radar heads-up display, including the missile counter,
-    reload bar, minimap, and FOV indicators.
+    Gerir o HUD do radar, incluindo o contador de mísseis, a barra de recarga,
+    o minimapa e os indicadores do painel FOV.
     """
     def __init__(self, radar, targets, input_controller, **kwargs):
+        # Permite definir o elemento pai; se não for especificado, utiliza camera.ui
         parent_entity = kwargs.pop('parent', camera.ui)
         super().__init__(parent=parent_entity, **kwargs)
         self.radar = radar
         self.targets = targets
         self.input_controller = input_controller  
+        self._update_timer = 0  # Temporizador para limitar a frequência de atualizações pesadas
 
-        # Timer to throttle heavy UI updates.
-        self._update_timer = 0
-
-        # Missile counter.
+        # Contador de mísseis (filho deste HUD).
         self.missile_text = Text(
             text="Mísseis: 4/4",
             scale=2,
@@ -28,7 +27,7 @@ class RadarHUD(Entity):
             parent=self
         )
 
-        # Reload bar elements.
+        # Elementos da barra de recarga.
         self.reload_background = Entity(
             model='quad',
             parent=self,
@@ -45,7 +44,7 @@ class RadarHUD(Entity):
             scale=(0, 0.05)
         )
         
-        # Minimap elements.
+        # Elementos do minimapa.
         self.minimap_border = Entity(
             parent=self,
             model='circle',
@@ -63,7 +62,7 @@ class RadarHUD(Entity):
         )
         self.minimap_radius = 0.5
 
-        # Radar direction indicator on minimap.
+        # Indicador de direção do radar no minimapa.
         cone = load_model('cone.obj')
         verde_transparente = Vec4(0.2, 0.8, 0.2, 0.5)
         self.thickness = 0.001 * (camera.fov / 60.0)
@@ -76,7 +75,7 @@ class RadarHUD(Entity):
             position=(0, 0)
         )
 
-        # Minimap indicators for each target.
+        # Indicadores para cada alvo no minimapa.
         self.minimap_indicators = {}
         for target in targets:
             indicator = Entity(
@@ -87,7 +86,7 @@ class RadarHUD(Entity):
             )
             self.minimap_indicators[target] = indicator
 
-        # FOV panel elements.
+        # Elementos do painel FOV.
         self.fov_border = Entity(
             parent=self,
             model='quad',
@@ -127,6 +126,7 @@ class RadarHUD(Entity):
             self.fov_indicators[target] = indicator
 
     def world_to_screen_point(self, world_position):
+        """Converte uma posição no mundo para coordenadas de ecrã."""
         p3 = Point3(world_position.x, world_position.y, world_position.z)
         p2 = Point3()
         lens = application.base.cam.node().getLens()
@@ -138,10 +138,9 @@ class RadarHUD(Entity):
             return Vec2(-100, -100)
 
     def update(self):
-        # Update missile counter and reload bar every frame.
+        # Atualiza o contador de mísseis e a barra de recarga a cada ciclo.
         available = self.input_controller.missile_capacity - self.input_controller.missile_count
         self.missile_text.text = f"Mísseis: {available}/{self.input_controller.missile_capacity}"
-
         if self.input_controller.reloading and self.input_controller.reload_start_time:
             elapsed = time.time() - self.input_controller.reload_start_time
             progress = min(elapsed / self.input_controller.reload_delay, 1)
@@ -149,12 +148,12 @@ class RadarHUD(Entity):
         else:
             self.reload_bar.scale_x = 0
 
-        # Throttle minimap and FOV updates to every 0.1 seconds.
+        # Atualizações pesadas para o minimapa e FOV, executadas a cada 0.01 segundos.
         self._update_timer += time.dt
         if self._update_timer >= 0.01:
             self._update_timer = 0
 
-            # Update minimap indicators.
+            # Atualiza os indicadores do minimapa.
             for target, indicator in list(self.minimap_indicators.items()):
                 if not target or not target.enabled:
                     indicator.enabled = False
@@ -163,10 +162,10 @@ class RadarHUD(Entity):
                 try:
                     rel = target.world_position - self.radar.world_position
                 except Exception as e:
-                    print("Erro ao acessar world_position no RadarHUD:", e)
+                    print("Erro ao aceder a world_position no RadarHUD:", e)
                     continue
                 x, y = rel.x, rel.z
-                dist = math.sqrt(x*x + y*y)
+                dist = math.sqrt(x * x + y * y)
                 if dist > 500:
                     factor = 500 / dist
                     x *= factor
@@ -175,7 +174,7 @@ class RadarHUD(Entity):
                 ui_y = (y / 500) * self.minimap_radius
                 indicator.position = (ui_x, ui_y)
 
-            # Update radar direction indicator.
+            # Atualiza o indicador de direção.
             self.thickness = 0.3 * (camera.fov / 60.0)
             self.radar_direction_indicator.scale = (self.thickness, -self.minimap_radius * 0.5, 0.1)
             forward = camera.forward
@@ -184,7 +183,7 @@ class RadarHUD(Entity):
                 angle = math.degrees(math.atan2(fwd.x, fwd.y))
                 self.radar_direction_indicator.rotation_z = angle
 
-            # Update FOV indicators with a tolerance of 1 degree to avoid flickering.
+            # Atualiza os indicadores do painel FOV com uma tolerância de 1 grau para evitar a cintilação.
             for target, indicator in list(self.fov_indicators.items()):
                 if not target or not target.enabled:
                     indicator.enabled = False
@@ -200,7 +199,7 @@ class RadarHUD(Entity):
                 else:
                     indicator.enabled = True
                 ui_x = ((relative_angle + half_hfov) / (2 * half_hfov))
-                horiz_dist = math.sqrt(rel.x**2 + rel.z**2)
+                horiz_dist = math.sqrt(rel.x ** 2 + rel.z ** 2)
                 vertical_angle = math.degrees(math.atan2(rel.y, horiz_dist))
                 relative_v_angle = (camera.rotation_x + vertical_angle)
                 half_vfov = camera.fov / 2.0
