@@ -14,11 +14,12 @@ com diferentes tipos de alvos considerando a Radar Cross Section (RCS), simuland
 - panda3d-gltf
 - panda3d-simplepbr
 - Perlin Noise
+- imageio
 
 Instale as dependências executando:
 
 ```bash
-pip install ursina==7.0.0 Panda3D==1.10.15 panda3d-gltf==1.2.1 panda3d-simplepbr==0.12.0 perlin-noise
+pip install ursina==7.0.0 Panda3D==1.10.15 panda3d-gltf==1.2.1 panda3d-simplepbr==0.12.0 perlin-noise imageio
 ```
 
 ## Execução

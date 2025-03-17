@@ -157,8 +157,8 @@ def load_level_tutorial():
                 "Boa Sorte!\n"
              
             ),
-            'image': 'assets/chaff flare.gif',
-            'image_scale': (0.5, 0.4),
+            'image': 'assets/chaff flare.jpg',
+            'image_scale': (0.2, 0.1),
             'image_position': (0, -0.2)
         }
     ]
