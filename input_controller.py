@@ -1,6 +1,8 @@
 from ursina import *
 import math, time
 from missile import Missile
+from tutorial_slides import TutorialSlides 
+
 
 class InputController(Entity):
     def __init__(self, radar, targets,game_controller, sensibilidade=100, base_fov=60, **kwargs):
@@ -45,6 +47,19 @@ class InputController(Entity):
         camera.fov = lerp(camera.fov, self.target_fov, time.dt * 5)
     
     def input(self, key):
+
+         # Captura do input para avançar os slides via "enter"
+        if key == 'enter':
+            try:
+                # Procura por uma entidade TutorialSlides nos filhos da UI
+                for child in camera.ui.children:
+                    if isinstance(child, TutorialSlides):
+                        child.next_slide()
+                        # Opcional: retorna logo para não processar outros inputs durante os slides
+                        return
+            except Exception as e:
+                print("Erro ao avançar o slide:", e)
+
         # Zoom via scroll
         if key == 'scroll up':
             self.target_fov = clamp(self.target_fov - 5, 5, 100)

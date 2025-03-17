@@ -8,7 +8,7 @@ a deteção e destruição. Tudo isto é apresentado de forma interativa, num jo
 2. Como Funciona um Radar? O que é RCS? Materiais e a Sua Influência na Deteção
 Um radar é um sistema que usa ondas de rádio para detetar e localizar objetos à distância. 
 Funciona enviando um sinal de rádio (onda eletromagnética) na direção de um alvo. Quando esse sinal atinge o alvo, parte da energia 
-é refletida de volta para o radar. O sistema analisa então o sinal refletido para determinar a distância, a velocidade e a direção do alvo.
+é refletida de volta para o radar. O sistema analisa o sinal refletido e determina a distância, a velocidade e a direção do alvo.
 
 A RCS (Radar Cross-Section) é uma medida de quão detetável um objeto é pelo radar. Um RCS maior significa que o objeto reflete mais energia 
 de volta para o radar, tornando-o mais fácil de detetar. O RCS depende de vários fatores:
@@ -20,6 +20,20 @@ Tamanho do Alvo: Objetos maiores tendem a refletir mais energia.
 
 Forma do Alvo: Superfícies planas e angulares podem refletir o sinal para longe do radar, reduzindo a deteção.
 
+Vamos agora experimentar os controlos do jogo:
+Controlos do Jogo
+Aqui estão os controlos que vais usar para operar o radar e destruir os alvos:
+
+R: Ligar/desligar o radar. Mantém o radar apontado ao alvo o tempo necessário até se realizar o "lock". Quando isto acontece, o radar segue 
+automaticamente o movimento do alvo.
+
+Barra de Espaço: Lançar um míssil que irá seguir o alvo "locked".
+
+Scroll Up/Down: Aproximar ou afastar a câmara (zoom).
+
+Nota Importante: A bateria de mísseis do radar só pode conter 4 mísseis de cada vez. Depois de disparares os 4 mísseis, vais precisar de 
+esperar 3 segundos para que a bateria recarregue antes de poderes disparar novamente. Planeia os teus disparos!
+
 Primeiros Alvos de Exemplo: Cubo Metálico e Bola de Madeira
 Para demonstrar como o RCS e os materiais afetam a deteção, vais enfrentar dois alvos de teste:
 
@@ -27,18 +41,7 @@ Cubo Metálico: Altamente refletivo, fácil de detetar. Serve para mostrar como 
 
 Bola de Madeira: Menos refletiva, mais difícil de detetar. Demonstra como materiais não metálicos e formas arredondadas reduzem a reflexão do radar.
 
-Controlos do Jogo
-Aqui estão os controlos que vais usar para operar o radar e envolver os alvos:
 
-R: Ligar/desligar o radar. Mantém o radar apontado ao alvo o tempo necessário até se realizar o "lock". Quando isto acontece, o radar segue 
-automaticamente o movimento do alvo.
-
-Barra de Espaço: Lançar um míssil que irá seguir o alvo travado.
-
-Scroll Up/Down: Aproximar ou afastar a câmara (zoom).
-
-Nota Importante: A bateria de mísseis do radar só pode conter 4 mísseis de cada vez. Depois de disparares os 4 mísseis, vais precisar de 
-esperar 3 segundos para que a bateria recarregue antes de poderes disparar novamente. Planeia os teus disparos!
 
 3. Tecnologia Stealth e Alvos Avançados: F-16 e F-22 Raptor
 Agora que já entendes o básico do radar e do RCS, vamos introduzir a tecnologia stealth. Esta tecnologia é usada para reduzir a 
