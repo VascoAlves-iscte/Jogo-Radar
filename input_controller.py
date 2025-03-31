@@ -48,17 +48,23 @@ class InputController(Entity):
     
     def input(self, key):
 
-         # Captura do input para avançar os slides via "enter"
-        if key == 'enter':
+        if key == 'page up':
             try:
-                # Procura por uma entidade TutorialSlides nos filhos da UI
                 for child in camera.ui.children:
                     if isinstance(child, TutorialSlides):
                         child.next_slide()
-                        # Opcional: retorna logo para não processar outros inputs durante os slides
                         return
             except Exception as e:
                 print("Erro ao avançar o slide:", e)
+        
+        if key == 'page down':
+            try:
+                for child in camera.ui.children:
+                    if isinstance(child, TutorialSlides):
+                        child.prev_slide()
+                        return
+            except Exception as e:
+                print("Erro ao retroceder o slide:", e)
 
         # Zoom via scroll
         if key == 'scroll up':

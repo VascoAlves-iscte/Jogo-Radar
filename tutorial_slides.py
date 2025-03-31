@@ -12,9 +12,11 @@ class TutorialSlides(Entity):
                 'image2': Caminho para uma segunda imagem estática (opcional).
                 'image2_scale': Escala para a segunda imagem.
                 'image2_position': Posição para a segunda imagem.
+                'on_enter': Callback executado ao entrar neste slide.
+                'on_exit': Callback executado ao sair deste slide.
         auto_advance_time: tempo (em segundos) para avançar automaticamente para o próximo slide.
-        default_image_scale: valores padrão para a escala caso não seja definida no slide.
-        default_image_position: valores padrão para a posição caso não seja definida no slide.
+        default_image_scale: escala padrão para a imagem, se não definida.
+        default_image_position: posição padrão para a imagem, se não definida.
         """
         super().__init__(parent=camera.ui, **kwargs)
         self.slides = slides
@@ -26,6 +28,16 @@ class TutorialSlides(Entity):
         self.display_slide(self.current_index)
 
     def display_slide(self, index):
+        # Se existir um slide anterior com on_exit, chama-o
+        if self.current_index < len(self.slides):
+            prev_slide = self.slides[self.current_index]
+            if 'on_exit' in prev_slide and callable(prev_slide['on_exit']):
+                try:
+                    prev_slide['on_exit']()
+                except Exception as e:
+                    print("Erro no on_exit do slide anterior:", e)
+        self.current_index = index
+
         # Remove o conteúdo do slide anterior.
         for child in self.slide_entity.children:
             destroy(child)
@@ -44,7 +56,6 @@ class TutorialSlides(Entity):
         )
         
         # Exibe a primeira imagem ou animação.
-        
         if 'image' in slide:
             image_scale = slide.get('image_scale', self.default_image_scale)
             image_position = slide.get('image_position', self.default_image_position)
@@ -82,16 +93,13 @@ class TutorialSlides(Entity):
                     scale=image2_scale
                 )
         
-        # O "Skip" não é mais um botão clicável, pois o avanço será feito pelo InputController.
-        # Mas podemos exibir um aviso visual se desejado.
-        Text(
-            text='Pressiona ENTER para avançar',
-            parent=self.slide_entity,
-            scale=0.8,
-            position=(0.0, 0.45),
-            origin=(0,0),
-            color=color.yellow
-        )
+        
+        # Chama o callback on_enter se definido
+        if 'on_enter' in slide and callable(slide['on_enter']):
+            try:
+                slide['on_enter']()
+            except Exception as e:
+                print("Erro no on_enter do slide:", e)
         
         # Avança automaticamente após o tempo definido.
         invoke(self.next_slide, delay=self.auto_advance_time)
@@ -102,6 +110,11 @@ class TutorialSlides(Entity):
             self.display_slide(self.current_index)
         else:
             self.end_slides()
+    
+    def prev_slide(self):
+        if self.current_index > 0:
+            self.current_index -= 1
+            self.display_slide(self.current_index)
 
     def end_slides(self):
         destroy(self)

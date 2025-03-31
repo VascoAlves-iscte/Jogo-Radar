@@ -82,5 +82,3 @@ python main.py
 - `perlin-noise`
 - Bibliotecas padrão do Python: `math`, `random`, `time`
 
-Este documento tem como objetivo fornecer uma introdução clara ao projeto.
-

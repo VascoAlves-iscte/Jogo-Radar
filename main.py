@@ -4,6 +4,7 @@ from input_controller import InputController
 from Level_Arena import load_level_arena
 from Level_Tutorial import load_level_tutorial
 from radar_hud import RadarHUD
+from tutorial_slides import TutorialSlides
 
 
 app = Ursina()
@@ -89,6 +90,10 @@ class GameController(Entity):
         if self.radar_hud:
             destroy(self.radar_hud)
             self.radar_hud = None
+
+        for child in list(camera.ui.children):
+            if isinstance(child, TutorialSlides):
+                destroy(child)
 
         destroy_entities(self.menu_entities)
         destroy_entities(self.pause_menu_entities)
